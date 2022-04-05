@@ -28,7 +28,7 @@ for eps in EPSILON_VALS:
             # P[t_i=1|c_t=a] = a/n; maybe a should actually be p(n-1)+x+1??
             prob_1_given_count = (p*(n-1)+x)/n
            
-            # Compute Chernoff Bound(Pr[X>=A])
+            # Compute Chernoff Bound: Pr[X>=A] < M_x(t) / e^(t*A)
             m = (n-1)*(1-p) # Max value that X can take on: (n'- pn')=n'*(1-p)=(n-1)*(1-p)
             t = 1
             mgf_x = ((math.e**t)*p+1-p)**m # moment generating function for Binomial RV X
