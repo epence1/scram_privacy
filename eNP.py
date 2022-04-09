@@ -90,7 +90,7 @@ def compute_prob_eNP_fails(n, p, bound_on_deviation):
     
     # Leo, is this what you meant by over/under approximation; we can either start just below or just above the bound on deviation
     # Alternative could be lowest_bad_count, which == largest_good_count + 1?
-    # THIS ASSUMES THE CASE B= n' * p + x, could be problematic!!!
+    # THIS ASSUMES THE CASE B= n' * p + x since we are setting it at expected_value + A; could be problematic!!!
     largest_good_count = expected_value_of_binomial + int(math.ceil(bound_on_deviation)) - 1
     
     # Cumulative Distribution Function (cdf) computes the probability random variable x is <= largest_good_count (k)
@@ -108,6 +108,13 @@ for n in NUM_PARTICPANTS:
             probability_eNP_fails = compute_prob_eNP_fails(n, p, bounded_deviation)
 
             # Placeholder for computing probability t_i=0,1 given count=a
+
+            # Placeholder for solving for smallest epsilon given a failure rate
+
+            # Placeholder for solving for minimizing failure rate
+
+            # Placeholder for identifying the smallest n for which "delta" (the odds of failure) is reasonable
+            # Perhaps grow the range of x, let x be anything that keeps total count valid, if x is positive, if x is negative
 
             # Update Table
             table["eps"].append(eps)
