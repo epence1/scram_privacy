@@ -7,6 +7,7 @@ import math
 EPS = "eps"
 N = "n"
 P = "p"
+UNDEFINED = "undefined"
 
 PROB_ENP_FAILS = "probability_eNP_fails"
 DEV_CEILING = "deviation_ceiling"
@@ -14,6 +15,7 @@ DEV_CEILING = "deviation_ceiling"
 COUNT = "count"
 PROB_ZERO_GIVEN_COUNT = "prob_0_given_count"
 PROB_ONE_GIVEN_COUNT = "prob_1_given_count"
+RATIO_PROB_ZERO_PROB_ONE = "prob_zero_over_prob_one"
 
 # DEFINE table output format
 failure_table = {
@@ -29,6 +31,7 @@ count_table = {
     COUNT: [],
     PROB_ZERO_GIVEN_COUNT: [],
     PROB_ONE_GIVEN_COUNT: [],
+    RATIO_PROB_ZERO_PROB_ONE: [],
 }
 
 # DEFINE eNP parameters to iterate over
@@ -140,7 +143,7 @@ def update_table(table, row_entry):
     
     return table
 
-# Create Failure Table
+# Create failure table
 for n in NUM_PARTICPANTS:
     for p in PROBABILITIES:
         for eps in EPSILON_VALS:
@@ -170,22 +173,31 @@ for n in NUM_PARTICPANTS:
             # Update Table
             update_table(failure_table, row_entry)
 
-# Create count_table
+# Create count table
 for n in [1, 5, 10, 50, 100]:
     for c in range(n+1):
         prob_0_given_count, prob_1_given_count = compute_prob_input_given_count(count=c, n=n)
         
+        try:
+            ratio = prob_0_given_count/prob_1_given_count
+        except (ZeroDivisionError):
+            ratio = UNDEFINED
         #Format Row Entry
         row_entry = {
                 N: n, 
                 COUNT: c, 
                 PROB_ZERO_GIVEN_COUNT: prob_0_given_count,
                 PROB_ONE_GIVEN_COUNT: prob_1_given_count,
+                RATIO_PROB_ZERO_PROB_ONE: ratio,
                 }
         
         # Update Table
         update_table(count_table, row_entry)
 
+# Display tables
 print(tabulate(failure_table, headers="keys"))
 print("\n\n\n")
 print(tabulate(count_table, headers="keys"))
+
+# WHY IS DEVIATION CEILING NEGATIVE IN MANY CASES? WHAT DOES THAT MEAN?
+# IF X IS BOUNDED ON THE LOWER END BY ZERO THEN THIS DOESNT EVEN MAKE SENSE
