@@ -2,17 +2,40 @@ from tabulate import tabulate
 from scipy.stats import binom
 import math
 
+###
+# DEFINE constants
+EPS = "eps"
+N = "n"
+P = "p"
+
+PROB_ENP_FAILS = "probability_eNP_fails"
+DEV_CEILING = "deviation_ceiling"
+
+COUNT = "count"
+PROB_ZERO_GIVEN_COUNT = "prob_0_given_count"
+PROB_ONE_GIVEN_COUNT = "prob_1_given_count"
+
+# DEFINE table output format
+failure_table = {
+    N: [],
+    P: [],
+    EPS: [],
+    PROB_ENP_FAILS: [],
+    DEV_CEILING: [],
+}
+
+count_table = {
+    N: [],
+    COUNT: [],
+    PROB_ZERO_GIVEN_COUNT: [],
+    PROB_ONE_GIVEN_COUNT: [],
+}
+
+# DEFINE eNP parameters to iterate over
 EPSILON_VALS = [0.001, 0.01, 0.1, 0.2, 0.5]
 PROBABILITIES = [0.1, 0.5, 0.9]
 NUM_PARTICPANTS = [1, 10, 100, 1000, 10000, 1000000]
-
-table = {
-    "n": [],
-    "p": [],
-    "eps": [],
-    "probability_eNP_fails": [],
-    "deviation_ceiling": [],
-}
+###
 
 def compute_bounded_deviation(eps, p, n):
     '''
@@ -85,6 +108,7 @@ def compute_prob_eNP_fails(n, p, bound_on_deviation):
     Returns:
     failure_odds <float> : the probability eNP fails
     '''
+
     n_prime = n-1
     expected_value_of_binomial = int((n_prime) * p)
     
@@ -98,7 +122,25 @@ def compute_prob_eNP_fails(n, p, bound_on_deviation):
     failure_odds = 1 - binom.cdf(k=largest_good_count, n=n_prime, p=p)
     return failure_odds
 
+def update_table(table, row_entry):
+    '''
+    Updates an existing python.tabulate table
 
+    Args:
+    table <dict> : existing table dictionary
+    row_entry <dict> : maps variables/column names to explicit values for a given row of table
+
+    Returns:
+    table <dict>
+    '''
+
+    for c,v in row_entry.items():
+        # Operates one row at a time
+        table[c].append(v)
+    
+    return table
+
+# Create Failure Table
 for n in NUM_PARTICPANTS:
     for p in PROBABILITIES:
         for eps in EPSILON_VALS:
@@ -116,11 +158,34 @@ for n in NUM_PARTICPANTS:
             # Placeholder for identifying the smallest n for which "delta" (the odds of failure) is reasonable
             # Perhaps grow the range of x, let x be anything that keeps total count valid, if x is positive, if x is negative
 
+            # Format Row Entry
+            row_entry = {
+                EPS: eps, 
+                P: p, 
+                N: n, 
+                PROB_ENP_FAILS: probability_eNP_fails, 
+                DEV_CEILING: bounded_deviation
+                }
+            
             # Update Table
-            table["eps"].append(eps)
-            table["p"].append(p)
-            table["n"].append(n)
-            table["probability_eNP_fails"].append(probability_eNP_fails)
-            table["deviation_ceiling"].append(bounded_deviation)
+            update_table(failure_table, row_entry)
 
-print(tabulate(table, headers="keys"))
+# Create count_table
+for n in [1, 5, 10, 50, 100]:
+    for c in range(n+1):
+        prob_0_given_count, prob_1_given_count = compute_prob_input_given_count(count=c, n=n)
+        
+        #Format Row Entry
+        row_entry = {
+                N: n, 
+                COUNT: c, 
+                PROB_ZERO_GIVEN_COUNT: prob_0_given_count,
+                PROB_ONE_GIVEN_COUNT: prob_1_given_count,
+                }
+        
+        # Update Table
+        update_table(count_table, row_entry)
+
+print(tabulate(failure_table, headers="keys"))
+print("\n\n\n")
+print(tabulate(count_table, headers="keys"))
