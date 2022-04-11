@@ -1,4 +1,5 @@
 from tabulate import tabulate
+import scipy
 from scipy.stats import binom
 import math
 
@@ -143,6 +144,34 @@ def update_table(table, row_entry):
     
     return table
 
+def compute_epsilon_given_failure_rate(failure_rate, p, n):
+    
+    def f(eps, failure_rate, p, n):
+        
+        bound = ( (eps * p * (n - 1) * (1 - p)) / (1 + p * eps) ) - ( (1 - p) / (
+        1 + p * eps) )
+        
+        n_prime = n-1
+        expected_value_of_binomial = int((n_prime) * p)
+        
+        k = expected_value_of_binomial + int(math.ceil(bound)) - 1
+        return abs( failure_rate - (1 - binom.cdf(k=k, n=n, p=p)) )
+    
+    eps_opt = scipy.optimize.fminbound(f, 0.0, 0.9, args=(failure_rate, p, n,))
+    return eps_opt
+
+def compute_failure_rate_given_epsilon(eps, p, n):
+    '''
+    Computes probability eNP does not hold
+    '''
+    bounded_deviation = compute_bounded_deviation(eps=eps, p=p, n=n)
+    probability_eNP_fails = compute_prob_eNP_fails(n, p, bounded_deviation)
+    return probability_eNP_fails
+
+
+print(compute_epsilon_given_failure_rate(0.6673, 0.1, 100))
+print("\n\n\n")
+
 # Create failure table
 for n in NUM_PARTICPANTS:
     for p in PROBABILITIES:
@@ -151,8 +180,6 @@ for n in NUM_PARTICPANTS:
             bounded_deviation = compute_bounded_deviation(eps=eps, p=p, n=n)
 
             probability_eNP_fails = compute_prob_eNP_fails(n, p, bounded_deviation)
-
-            # Placeholder for computing probability t_i=0,1 given count=a
 
             # Placeholder for solving for smallest epsilon given a failure rate
 
@@ -197,7 +224,7 @@ for n in [1, 5, 10, 50, 100]:
 # Display tables
 print(tabulate(failure_table, headers="keys"))
 print("\n\n\n")
-print(tabulate(count_table, headers="keys"))
+#print(tabulate(count_table, headers="keys"))
 
 # WHY IS DEVIATION CEILING NEGATIVE IN MANY CASES? WHAT DOES THAT MEAN?
 # IF X IS BOUNDED ON THE LOWER END BY ZERO THEN THIS DOESNT EVEN MAKE SENSE
