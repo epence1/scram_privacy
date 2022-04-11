@@ -144,32 +144,63 @@ def update_table(table, row_entry):
     
     return table
 
-def compute_epsilon_given_failure_rate(failure_rate, p, n):
+def compute_epsilon_given_failure_rate(failure_rate, p, n, eps_search_space = [0.0, 1.0]):
+    '''
+    Computes epsilon given a failure rate by identifying the epsilon value 
+    that minimizes the difference between the specfied failure rate and 
+    the actual failure rate (a function of epsilon)
+
+    The significance here is that a practioner might ask, "how do I set epsilon
+    to ensure eNP holds x% of the time?"
+
+    Args:
+    failure_rate <float> : acceptable failure rate of eNP
+    p <float> : probability of t_i=1 (for any t_i in input T)
+    n <int> : number of inputs, or participants
+    eps_search_space <list> : list of 2 floats specifcying the [lower, upper] bounds on potential epsilon values
+    
+    Returns:
+    eps_out <float> : epsilon required to achieve specfied failure rate
+    '''
     
     def f(eps, failure_rate, p, n):
-        
+        # Upper bound on the deviation x from the mean n'*p, as specified in eNP paper
         bound = ( (eps * p * (n - 1) * (1 - p)) / (1 + p * eps) ) - ( (1 - p) / (
         1 + p * eps) )
         
         n_prime = n-1
-        expected_value_of_binomial = int((n_prime) * p)
+        expected_value_of_binomial = int((n_prime) * p) # n'*p for (Binomial=n',p)
         
+        # k represents the largest acceptable value that count can take on: mean + largest acceptable deviation from mean
         k = expected_value_of_binomial + int(math.ceil(bound)) - 1
+        # return absolute value of difference between specified and computed failure rate
         return abs( failure_rate - (1 - binom.cdf(k=k, n=n, p=p)) )
     
-    eps_opt = scipy.optimize.fminbound(f, 0.0, 0.9, args=(failure_rate, p, n,))
+    eps_opt = scipy.optimize.fminbound(f, eps_search_space[0], eps_search_space[1], args=(failure_rate, p, n,))
     return eps_opt
 
 def compute_failure_rate_given_epsilon(eps, p, n):
     '''
-    Computes probability eNP does not hold
+    Computes probability eNP does not hold by first computing a bound on deviation
+    and second computing the liklihood deviation exceeds this bound
+
+    Args:
+    eps <float> : epsilon
+    p <float> : probability of t_i=1 (for any t_i in input T)
+    n <int> : number of inputs, or participants
+
+    Returns:
+    probability_eNP_fails <float> : the probability eNP fails
     '''
     bounded_deviation = compute_bounded_deviation(eps=eps, p=p, n=n)
     probability_eNP_fails = compute_prob_eNP_fails(n, p, bounded_deviation)
     return probability_eNP_fails
 
-
-print(compute_epsilon_given_failure_rate(0.6673, 0.1, 100))
+specified_failure_rate = 0.535523
+specified_p = 0.1
+specified_n = 100
+print("epsilon necessary to satisfy (n,p,failure_rate): " + str([specified_n,specified_p,specified_failure_rate]))
+print(compute_epsilon_given_failure_rate(specified_failure_rate, specified_p, specified_n))
 print("\n\n\n")
 
 # Create failure table
@@ -224,7 +255,7 @@ for n in [1, 5, 10, 50, 100]:
 # Display tables
 print(tabulate(failure_table, headers="keys"))
 print("\n\n\n")
-#print(tabulate(count_table, headers="keys"))
+print(tabulate(count_table, headers="keys"))
 
 # WHY IS DEVIATION CEILING NEGATIVE IN MANY CASES? WHAT DOES THAT MEAN?
 # IF X IS BOUNDED ON THE LOWER END BY ZERO THEN THIS DOESNT EVEN MAKE SENSE
