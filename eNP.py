@@ -36,7 +36,7 @@ count_table = {
 }
 
 # DEFINE eNP parameters to iterate over
-EPSILON_VALS = [0.001, 0.01, 0.1, 0.2, 0.5]
+EPSILON_VALS = [0.001, 0.01, 0.1, 0.1459017045291642, 0.2, 0.5]
 PROBABILITIES = [0.1, 0.5, 0.9]
 NUM_PARTICPANTS = [1, 10, 100, 1000, 10000, 1000000]
 ###
@@ -167,7 +167,7 @@ def compute_epsilon_given_failure_rate(failure_rate, p, n, eps_search_space = [0
     Returns:
     eps_out <float> : epsilon required to achieve specfied failure rate
     '''
-    
+    # Observation: small changes in epsilon do not seem to change failure liklihood much
     def f(eps, failure_rate, p, n):
         # Upper bound on the deviation x from the mean n'*p, as specified in eNP paper
         bound = ( (eps * p * (n - 1) * (1 - p)) / (1 + p * eps) ) - ( (1 - p) / (
