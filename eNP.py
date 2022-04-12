@@ -196,7 +196,7 @@ def compute_failure_rate_given_epsilon(eps, p, n):
     probability_eNP_fails = compute_prob_eNP_fails(n, p, bounded_deviation)
     return probability_eNP_fails
 
-specified_failure_rate = 0.535523
+specified_failure_rate = 0.736269
 specified_p = 0.1
 specified_n = 100
 print("epsilon necessary to satisfy (n,p,failure_rate): " + str([specified_n,specified_p,specified_failure_rate]))
