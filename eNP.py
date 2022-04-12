@@ -120,10 +120,15 @@ def compute_prob_eNP_fails(n, p, bound_on_deviation):
     # Alternative could be lowest_bad_count, which == largest_good_count + 1?
     # THIS ASSUMES THE CASE B= n' * p + x since we are setting it at expected_value + A; could be problematic!!!
     largest_good_count = expected_value_of_binomial + int(math.ceil(bound_on_deviation)) - 1
+    smallest_good_count = expected_value_of_binomial - int(math.ceil(bound_on_deviation)) + 1
     
     # Cumulative Distribution Function (cdf) computes the probability random variable x is <= largest_good_count (k)
     # We want odds x is greater than largest_good_count, so we do 1 - cdf
-    failure_odds = 1 - binom.cdf(k=largest_good_count, n=n_prime, p=p)
+    # We underapproiximate prob failure by adding 1 to the largest good count and subtracting 1 from smallest bad count
+    # When we overapproximate we end up with probabilities > 1
+    failure_odds_upper = 1 - binom.cdf(k=largest_good_count+1, n=n_prime, p=p)
+    failure_odds_lower = binom.cdf(k=smallest_good_count-1, n=n_prime, p=p)
+    failure_odds = failure_odds_upper + failure_odds_lower
     return failure_odds
 
 def update_table(table, row_entry):
@@ -168,13 +173,8 @@ def compute_epsilon_given_failure_rate(failure_rate, p, n, eps_search_space = [0
         bound = ( (eps * p * (n - 1) * (1 - p)) / (1 + p * eps) ) - ( (1 - p) / (
         1 + p * eps) )
         
-        n_prime = n-1
-        expected_value_of_binomial = int((n_prime) * p) # n'*p for (Binomial=n',p)
-        
-        # k represents the largest acceptable value that count can take on: mean + largest acceptable deviation from mean
-        k = expected_value_of_binomial + int(math.ceil(bound)) - 1
         # return absolute value of difference between specified and computed failure rate
-        return abs( failure_rate - (1 - binom.cdf(k=k, n=n, p=p)) )
+        return abs( failure_rate - compute_prob_eNP_fails(n=n,p=p, bound_on_deviation=bound) )
     
     eps_opt = scipy.optimize.fminbound(f, eps_search_space[0], eps_search_space[1], args=(failure_rate, p, n,))
     return eps_opt
@@ -259,3 +259,5 @@ print(tabulate(count_table, headers="keys"))
 
 # WHY IS DEVIATION CEILING NEGATIVE IN MANY CASES? WHAT DOES THAT MEAN?
 # IF X IS BOUNDED ON THE LOWER END BY ZERO THEN THIS DOESNT EVEN MAKE SENSE
+
+# Compare (function with bucketing) vs (function alone) for example
