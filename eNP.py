@@ -38,7 +38,7 @@ count_table = {
 # DEFINE eNP parameters to iterate over
 EPSILON_VALS = [0.001, 0.01, 0.1, 0.1459017045291642, 0.2, 0.5]
 PROBABILITIES = [0.1, 0.5, 0.9]
-NUM_PARTICPANTS = [1, 10, 100, 1000, 10000, 1000000]
+NUM_PARTICPANTS = [2, 5, 10, 100, 1000, 10000, 1000000]
 ###
 
 def compute_bounded_deviation(eps, p, n):
@@ -119,15 +119,15 @@ def compute_prob_eNP_fails(n, p, bound_on_deviation):
     # Leo, is this what you meant by over/under approximation; we can either start just below or just above the bound on deviation
     # Alternative could be lowest_bad_count, which == largest_good_count + 1?
     # THIS ASSUMES THE CASE B= n' * p + x since we are setting it at expected_value + A; could be problematic!!!
-    largest_good_count = expected_value_of_binomial + int(math.ceil(bound_on_deviation)) - 1
-    smallest_good_count = expected_value_of_binomial - int(math.ceil(bound_on_deviation)) + 1
+    largest_good_count = expected_value_of_binomial + int(math.ceil(bound_on_deviation))-1
+    largest_bad_count = expected_value_of_binomial - int(math.ceil(bound_on_deviation)) 
     
     # Cumulative Distribution Function (cdf) computes the probability random variable x is <= largest_good_count (k)
     # We want odds x is greater than largest_good_count, so we do 1 - cdf
     # We underapproiximate prob failure by adding 1 to the largest good count and subtracting 1 from smallest bad count
     # When we overapproximate we end up with probabilities > 1
-    failure_odds_upper = 1 - binom.cdf(k=largest_good_count+1, n=n_prime, p=p)
-    failure_odds_lower = binom.cdf(k=smallest_good_count-1, n=n_prime, p=p)
+    failure_odds_upper = 1 - binom.cdf(k=largest_good_count, n=n_prime, p=p)
+    failure_odds_lower = binom.cdf(k=largest_bad_count, n=n_prime, p=p)
     failure_odds = failure_odds_upper + failure_odds_lower
     return failure_odds
 
@@ -167,7 +167,7 @@ def compute_epsilon_given_failure_rate(failure_rate, p, n, eps_search_space = [0
     Returns:
     eps_out <float> : epsilon required to achieve specfied failure rate
     '''
-    # Observation: small changes in epsilon do not seem to change failure liklihood much
+    # Observation: small changes in epsilon do not seem to change failure likelihood
     def f(eps, failure_rate, p, n):
         # Upper bound on the deviation x from the mean n'*p, as specified in eNP paper
         bound = ( (eps * p * (n - 1) * (1 - p)) / (1 + p * eps) ) - ( (1 - p) / (
