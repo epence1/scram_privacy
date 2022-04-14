@@ -1,23 +1,23 @@
 from scipy.stats import binom
-from math import exp
+from math import exp, log
 from decimal import *
 import numpy as np
 import scipy
 
 
 def noiseless_privacy_analysis(n, p, eps):
-    '''
+    """
     Computes the expected value of an indicator variable I.
-    
-    I is 1 when, for all count=a where 0<a<n and an integer,the ratios 
-    P[Count=a|t_i=0]/P[Count=a|t_i=1] and P[Count=a|t_i=1]/P[Count=a|t_i=0] 
-    are both less than e^eps.  
-    The expected value of I is the weighted sum of indicator random variables 
+
+    I is 1 when, for all count=a where 0<a<n and an integer,the ratios
+    P[Count=a|t_i=0]/P[Count=a|t_i=1] and P[Count=a|t_i=1]/P[Count=a|t_i=0]
+    are both less than e^eps.
+    The expected value of I is the weighted sum of indicator random variables
     I_a, which equal 1 when a particular count of a is eNP and 0 otherwise.
     Each I_a is weighted by its probability of occurance.
-    
-    E[I] represnts the probability eNP holds for some count=a, where 0<a<n and an integer, 
-    that is sampled from the Binomial(n,p) distribution 
+
+    E[I] represnts the probability eNP holds for some count=a, where 0<a<n and an integer,
+    that is sampled from the Binomial(n,p) distribution
 
     Args:
     n <int> : number of inputs
@@ -26,9 +26,10 @@ def noiseless_privacy_analysis(n, p, eps):
 
     Returns:
     <tuple> of private_range <tuple>, expected_value_of_indicator <float> : private_range is of form (smallest private a, largest private a)
-    '''
+    """
+
     def prob_count_appearing(a):
-        '''
+        """
         Computes probability of seeing count=a, given n and p
         Assumes count is a binomial random variable
 
@@ -37,12 +38,12 @@ def noiseless_privacy_analysis(n, p, eps):
 
         Returns:
         prob <float> : probability
-        '''
+        """
         prob = binom.pmf(k=a, n=n, p=p)
         return prob
 
     def is_eps_noiseless_private(a):
-        '''
+        """
         Computes indicator variable I_a
         Treats count as Binomial(n'=n-1, p)
         I_a=1 when ratios P[Count=a|t_i=0]/P[Count=a|t_i=1] and P[Count=a|t_i=1]/P[Count=a|t_i=0] are both less than e^eps
@@ -53,29 +54,32 @@ def noiseless_privacy_analysis(n, p, eps):
 
         Returns:
         indicator <bool> : indicator random variable that is true only when eNP privacy constraint is met
-        '''
+        """
         # Count of n or zero can never be private; you know everyone's inputs
         if a >= n or a == 0:
             return 0
 
         # Make sure count being checked is positive
         assert a > 0
-        
+
         # Set privacy threshold as e^eps
         thresh = Decimal(exp(eps))
 
         # If we truly want to fix the nth input, dont we have to multiply by prob that is zero or 1?
-        numerator = Decimal(binom.pmf(k=a, n=n - 1, p=p)) # fixes nth input as 0
-        denominator = Decimal(binom.pmf(k=a - 1, n=n - 1, p=p)) # fixes nth input as 1
-        indicator = numerator < thresh * denominator and denominator < thresh * numerator
+        numerator = Decimal(binom.pmf(k=a, n=n - 1, p=p))  # fixes nth input as 0
+        denominator = Decimal(binom.pmf(k=a - 1, n=n - 1, p=p))  # fixes nth input as 1
+        indicator = (
+            numerator < thresh * denominator and denominator < thresh * numerator
+        )
         return indicator
 
-    expected_val_of_indicator = 0
+    expected_success_rate = 0
     is_eps_private_flag = False
     flag_switched = False
     lower_a, upper_a = -1, -1
-    
-    for a in range(0, n + 1):
+
+    # for a in range(0, n + 1):
+    for a in range(1, n):  ## excluding non-private endpoints
         if not flag_switched:
             # If count=a can be eNP and flag is false
             if is_eps_noiseless_private(a) and not is_eps_private_flag:
@@ -83,11 +87,11 @@ def noiseless_privacy_analysis(n, p, eps):
                 lower_a = a
                 # Set flag to true, indicating we expect a continuous region of acceptable a values (counts)
                 is_eps_private_flag = True
-            
+
             # If count=a is not eNP and previous counts were eNP
             elif not is_eps_noiseless_private(a) and is_eps_private_flag:
                 # Establish previous a value as largest eNP count
-                upper_a = a-1
+                upper_a = a - 1
                 # Set flag back to false
                 is_eps_private_flag = False
                 # Indicate the continuous region of acceptable counts has terminated
@@ -96,21 +100,27 @@ def noiseless_privacy_analysis(n, p, eps):
             # Should be not private since continuous region terminated
             if is_eps_noiseless_private(a):
                 print("going back and forth...")
-                print("good a range: [", lower_a, ",", upper_a, ")")
+                print("good a range: [", lower_a, ",", upper_a, "]")
                 print("new a: ", a)
                 assert 1 == 0
-        
-        # Expected value of indicator is sum of P[Count=a] * I[Count=a]
-        expected_val_of_indicator += prob_count_appearing(a) * is_eps_noiseless_private(a)
-    
-    private_range = (lower_a, upper_a)
-    # print("good a range: [", lower_a, ",", upper_a, ")")
-    return private_range, expected_val_of_indicator
 
-def compute_epsilon_given_delta(delta, p, n, eps_search_space = [0.0, 7.0]):
-    '''
-    Computes smallest epsilon for a given delats (failure rate) by identifying 
-    the epsilon value that minimizes the difference between the specfied delta and 
+        # Expected value of indicator is sum of P[Count=a] * I[Count=a]
+        expected_success_rate += prob_count_appearing(a) * is_eps_noiseless_private(a)
+
+    if upper_a == -1 and lower_a != -1:
+        upper_a = n - 1
+    ## remove this if considering non-private inputs
+    expected_success_rate /= 1 - binom.pmf(k=0, n=n, p=p) - binom.pmf(k=n, n=n, p=p)
+
+    private_range = (lower_a, upper_a)
+    # print("good a range: [", lower_a, ",", upper_a, "]")
+    return private_range, expected_success_rate
+
+
+def compute_epsilon_given_delta(delta, p, n, eps_search_space=[0.0, 7.0]):
+    """
+    Computes smallest epsilon for a given delats (failure rate) by identifying
+    the epsilon value that minimizes the difference between the specfied delta and
     the actual delta (a function of epsilon)
 
     The significance here is that a practioner might ask, "how do I set epsilon
@@ -121,45 +131,90 @@ def compute_epsilon_given_delta(delta, p, n, eps_search_space = [0.0, 7.0]):
     p <float> : probability of t_i=1 (for any t_i in input T)
     n <int> : number of inputs, or participants
     eps_search_space <list> : list of 2 floats specifcying the [lower, upper] bounds on potential epsilon values
-    
+
     Returns:
     eps_out <float> : epsilon required to achieve specfied delta
-    '''
+    """
     # Observation: small changes in epsilon do not seem to change failure likelihood
     def f(eps, delta, p, n):
         private_range, exp_val = noiseless_privacy_analysis(n, p, eps)
-        computed_delta = 1-exp_val
+        computed_delta = 1 - exp_val
         # if computed delta is much smaller than delta, then this is very negative which is better
         return computed_delta - delta
-    
-    eps_opt = scipy.optimize.fminbound(f, eps_search_space[0], eps_search_space[1], args=(delta, p, n,))
+
+    eps_opt = scipy.optimize.fminbound(
+        f,
+        eps_search_space[0],
+        eps_search_space[1],
+        args=(
+            delta,
+            p,
+            n,
+        ),
+    )
     return eps_opt
 
-def compute_epsilon_given_delta_full_range(delta, p, n, eps_search_space = [0.01, 10.0, 0.01]):
+
+def compute_epsilon_given_delta_full_range(
+    delta, p, n, eps_search_space=[0.01, 10.0, 0.01]
+):
     for eps in np.arange(eps_search_space[0], eps_search_space[1], eps_search_space[2]):
-        private_range, exp_val = noiseless_privacy_analysis(n, p, eps)
-        if exp_val > 1:
+        print("checking eps", eps)
+        private_range, exp_success_rate = noiseless_privacy_analysis(n, p, eps)
+        print("range, exp success rate", private_range, exp_success_rate)
+        if exp_success_rate > 1:
             # expected value is greater than 1 sometimes
             # print("expected value greater than 1, setting to 1")
-            # print(exp_val)
-            exp_val = 1
-        if private_range == (1,n-1):
-            computed_delta = 1-exp_val
+            # print(exp_success_rate)
+            exp_success_rate = 1
+        if private_range == (1, n - 1):
+            computed_delta = 1 - exp_success_rate
             if computed_delta <= delta:
-                print(computed_delta, eps)
+                print("computed_delta, eps : ", computed_delta, eps)
                 return eps
     raise ValueError("not satisfiable")
 
 
-n_vals = range(80,81) # smallest n with reasonable delts is 30 or 31
+def compute_min_epsilon(p, n):
+    def get_min_epsilon(a):
+        if a == 0 or a == n:
+            return "infinity"
+        numerator = Decimal(binom.pmf(k=a, n=n - 1, p=p))  # fixes nth input as 0
+        denominator = Decimal(binom.pmf(k=a - 1, n=n - 1, p=p))  # fixes nth input as 1
+        return abs(log(numerator) - log(denominator))
+
+    # max_eps = 0
+    for a in range(0, n + 1):
+        print("output, min epsilon : ", a, get_min_epsilon(a))
+        # max_eps = max(max_eps, get_max_epsilon(a))
+
+    # return max_eps + 0.000000001
+
+
+# for n in range(3, 32):
+for n in range(3, 10):
+    print("checking n =", n)
+    compute_min_epsilon(p=0.1, n=n)
+
+# for n in range(3, 6):
+#     print("checking n", n)
+#     try:
+#         eps = compute_epsilon_given_delta_full_range(delta=1e-9, p=0.5, n=n)
+#     except ValueError:
+#         continue
+#     # if eps <= 5:
+#     print("n, eps : ", n, eps, "\n")
+#     # break
+
+n_vals = range(80, 81)  # smallest n with reasonable delts is 30 or 31
 p_vals = np.arange(0.1, 1.0, 0.1)
 # According to NIST (https://www.nist.gov/blogs/cybersecurity-insights/differential-privacy-future-work-open-challenges)
 # Epsilon values between 0 and 5 are strong
 eps_vals = np.arange(0.1, 5.1, 0.1)
 
-compute_epsilon_given_delta_full_range(delta = 1e-9, p=0.5, n=50)
-print(compute_epsilon_given_delta(delta = 1e-9, p=0.5, n=50))
-print(noiseless_privacy_analysis(n=50,p=0.5,eps=3.8))
+# compute_epsilon_given_delta_full_range(delta=1e-9, p=0.5, n=50)
+# print(compute_epsilon_given_delta(delta=1e-9, p=0.5, n=50))
+# print(noiseless_privacy_analysis(n=50, p=0.5, eps=3.9))
 
 
 # for n in n_vals:
@@ -174,4 +229,3 @@ print(noiseless_privacy_analysis(n=50,p=0.5,eps=3.8))
 #             if delta <= 1e-9:
 #                 print("good a range: [", private_range[0], ",", private_range[1], ")")
 #                 print("(n,p,eps,delta) =",(n, p, eps, delta), "\n")
-
