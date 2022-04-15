@@ -216,7 +216,7 @@ def compute_min_epsilon(p, n):
         '''
         if a == 0 or a == n:
             # There is no epsilon that can make these two cases private
-            return "infinity"
+            return -1e10 # Making nagative so that it never satisfies the max
         
         numerator = Decimal(binom.pmf(k=a, n=n - 1, p=p))  # fixes nth input as 0
         denominator = Decimal(binom.pmf(k=a - 1, n=n - 1, p=p))  # fixes nth input as 1
@@ -249,60 +249,60 @@ eps_vals = np.arange(0.1, 5.1, 0.1)
 ###
 
 ## Uncomment to test compute_min_epsilon()
-# for n in range(3, 10):
-#     print("checking n =", n)
-#     compute_min_epsilon(p=0.1, n=n)
+for n in range(3, 10):
+    print("checking n =", n)
+    print("Minimum Bounding Epsilon for all counts: ", compute_min_epsilon(p=0.1, n=n))
 
 ## Uncomment if you want to verify compute_epsilon_given_delta_full_range() works
 # compute_epsilon_given_delta_full_range(delta=1e-9, p=0.5, n=50)
 # print(noiseless_privacy_analysis(n=50, p=0.5, eps=3.9))
 
 ## Uncomment if you want to see how delta changes drastically when you exclude the two edge cases
-for n in range(3, 14):
-    print("checking n", n)
-    try:
-        eps_with_zeros_and_ones = compute_epsilon_given_delta_full_range(
-            delta=1e-9, 
-            p=0.5, 
-            n=n,
-            )
-    except ValueError:
-        eps_with_zeros_and_ones = "infinity"
+# for n in range(80, 83):
+#     print("checking n", n)
+#     try:
+#         eps_with_zeros_and_ones = compute_epsilon_given_delta_full_range(
+#             delta=1e-9, 
+#             p=0.5, 
+#             n=n,
+#             )
+#     except ValueError:
+#         eps_with_zeros_and_ones = "infinity"
 
-    try:
-        eps_without_zeros_and_ones = compute_epsilon_given_delta_full_range(
-            delta=1e-9, 
-            p=0.5, 
-            n=n, 
-            exclude_all_zeros=True,
-            exclude_all_ones=True,
-            )
-    except:
-        eps_without_zeros_and_ones = "infinity"
-    try:
-        eps_without_zeros = compute_epsilon_given_delta_full_range(
-            delta=1e-9, 
-            p=0.5, 
-            n=n, 
-            exclude_all_zeros=True,
-            exclude_all_ones=False,
-            )
-    except:
-        eps_without_zeros = "infinity"
-    try:
-        eps_without_ones = compute_epsilon_given_delta_full_range(
-            delta=1e-9, 
-            p=0.5, 
-            n=n, 
-            exclude_all_zeros=False,
-            exclude_all_ones=True,
-            )
-    except:
-        eps_without_ones = "infinity"
-    print("n, eps_with_zeros_and_ones : ", n, eps_with_zeros_and_ones, "\n")
-    print("n, eps_without_zeros_and_ones : ", n, eps_without_zeros_and_ones, "\n")
-    print("n, eps_without_zeros : ", n, eps_without_zeros, "\n")
-    print("n, eps_without_ones : ", n, eps_without_ones, "\n")
+#     try:
+#         eps_without_zeros_and_ones = compute_epsilon_given_delta_full_range(
+#             delta=1e-9, 
+#             p=0.5, 
+#             n=n, 
+#             exclude_all_zeros=True,
+#             exclude_all_ones=True,
+#             )
+#     except:
+#         eps_without_zeros_and_ones = "infinity"
+#     try:
+#         eps_without_zeros = compute_epsilon_given_delta_full_range(
+#             delta=1e-9, 
+#             p=0.5, 
+#             n=n, 
+#             exclude_all_zeros=True,
+#             exclude_all_ones=False,
+#             )
+#     except:
+#         eps_without_zeros = "infinity"
+#     try:
+#         eps_without_ones = compute_epsilon_given_delta_full_range(
+#             delta=1e-9, 
+#             p=0.5, 
+#             n=n, 
+#             exclude_all_zeros=False,
+#             exclude_all_ones=True,
+#             )
+#     except:
+#         eps_without_ones = "infinity"
+#     print("n, eps_with_zeros_and_ones : ", n, eps_with_zeros_and_ones, "\n")
+#     print("n, eps_without_zeros_and_ones : ", n, eps_without_zeros_and_ones, "\n")
+#     print("n, eps_without_zeros : ", n, eps_without_zeros, "\n")
+#     print("n, eps_without_ones : ", n, eps_without_ones, "\n")
 
 ## Uncomment if you want to see the private ranges given n, p, eps
 # for n in n_vals:
