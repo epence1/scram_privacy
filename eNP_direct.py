@@ -236,7 +236,7 @@ def compute_min_epsilon(p, n):
     # every count in the range
     max_eps = 0
     for a in range(0, n + 1):
-        print("count, min epsilon : ", a, get_min_epsilon(a))
+        print("[count | min epsilon | mass]: ", "[", a, "|", get_min_epsilon(a), "|", binom.pmf(k=a, n=n, p=p), "]")
         max_eps = max(max_eps, get_min_epsilon(a))
     return max_eps
 
@@ -247,6 +247,11 @@ p_vals = np.arange(0.1, 1.0, 0.1)
 # Epsilon values between 0 and 5 are strong
 eps_vals = np.arange(0.1, 5.1, 0.1)
 ###
+
+## Uncomment if you want the probability mass across counts for a given n
+# for n in range(3,7):
+#     for a in range(0, n + 1):
+#         print("n, a, prob count appears: ",n, a, binom.pmf(k=a, n=n, p=0.1))
 
 ## Uncomment to test compute_min_epsilon()
 for n in range(3, 10):
