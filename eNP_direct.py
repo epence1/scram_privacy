@@ -4,7 +4,9 @@ from decimal import *
 import numpy as np
 import scipy
 
-
+# Epsilon -> Delta
+# This function answers the question: how big does delta need to be given my epsilon, n, p?
+# More simply, which count values will I need to accept as non-private?
 def noiseless_privacy_analysis(n, p, eps, exclude_all_zeros=False, exclude_all_ones=False):
     """
     Computes the expected value of an indicator variable I.
@@ -136,6 +138,7 @@ def noiseless_privacy_analysis(n, p, eps, exclude_all_zeros=False, exclude_all_o
     # print("good a range: [", lower_a, ",", upper_a, "]")
     return private_range, expected_success_rate
 
+# Delta -> Epsilon
 def compute_epsilon_given_delta_full_range(
     delta, 
     p, 
@@ -180,7 +183,7 @@ def compute_epsilon_given_delta_full_range(
         if private_range == (1, n - 1):
             computed_delta = 1 - exp_success_rate
             if computed_delta <= delta:
-                #print("computed_delta, eps : ", computed_delta, eps)
+                print("computed_delta, eps : ", computed_delta, eps)
                 return eps
     raise ValueError(
         "Not satisfiable: There is no epsilon in the given range that can produce the given delta while ensuring 1->n-1 is eNP private"
@@ -235,9 +238,26 @@ def compute_min_epsilon(p, n):
     # This ensures we find the smallest eps that can bound
     # every count in the range
     max_eps = 0
+    expected_eps = 0
     for a in range(0, n + 1):
-        print("[count | min epsilon | mass]: ", "[", a, "|", get_min_epsilon(a), "|", binom.pmf(k=a, n=n, p=p), "]")
-        max_eps = max(max_eps, get_min_epsilon(a))
+        min_eps_for_count = get_min_epsilon(a)
+        prob_of_count = binom.pmf(k=a, n=n, p=p)
+        print(
+            "[count | min epsilon | mass ]: [",
+            a, 
+            "|", 
+            min_eps_for_count, 
+            "|", 
+            prob_of_count, 
+            "]"
+            )
+        # dont incorperate epsilons for 0, n since they are impossible
+        if min_eps_for_count > 0:
+            expected_eps += prob_of_count*min_eps_for_count
+        max_eps = max(max_eps, min_eps_for_count)
+    # Normalize
+    expected_eps /= 1 - binom.pmf(k=0, n=n, p=p) - binom.pmf(k=n, n=n, p=p)
+    print("expected value of epsilon, excluding c=0, c=n:", expected_eps)
     return max_eps
 
 ###
@@ -253,14 +273,15 @@ eps_vals = np.arange(0.1, 5.1, 0.1)
 #     for a in range(0, n + 1):
 #         print("n, a, prob count appears: ",n, a, binom.pmf(k=a, n=n, p=0.1))
 
-## Uncomment to test compute_min_epsilon()
+## Uncomment to see min epsilon that ensures 1 -> n-1 is eNP
 for n in range(3, 10):
     print("checking n =", n)
     print("Minimum Bounding Epsilon for all counts: ", compute_min_epsilon(p=0.1, n=n))
 
 ## Uncomment if you want to verify compute_epsilon_given_delta_full_range() works
 # compute_epsilon_given_delta_full_range(delta=1e-9, p=0.5, n=50)
-# print(noiseless_privacy_analysis(n=50, p=0.5, eps=3.9))
+# # By setting epsilon at 3.8, just below the required threshold, we see the full range is not achieved
+# print(noiseless_privacy_analysis(n=50, p=0.5, eps=3.8))
 
 ## Uncomment if you want to see how delta changes drastically when you exclude the two edge cases
 # for n in range(80, 83):
