@@ -69,19 +69,30 @@ class DeniablePrivacy:
         for a in range(1, self.n):
             expected_success_rate += self.prob_output_appearing(
                 a
-            ) * self.is_eps_deniable_private(a, eps)
+            ) * self.is_eps_deniable_private(a, eps, verbose)
 
         return expected_success_rate
 
     def get_min_eps_slow(self, failure_rate):
         ## returns the minimum epsilon that is compatible with
         ## a given failure rate
-        eps = -1
+        eps = 1e9
         for a in self.valid_outputs():
             cand_eps = self.get_min_epsilon_for_count(a)
             if 1 - failure_rate < self.get_success_rate(cand_eps):
-                eps = max(cand_eps, eps)
+                eps = min(cand_eps, eps)
         return eps
+
+    def get_eps_full_range(self, failure_rate):
+        eps = 0
+        for a in self.valid_outputs():
+            cand_eps = self.get_min_epsilon_for_count(a)
+            eps = max(cand_eps, eps)
+
+        if 1 - failure_rate < self.get_success_rate(eps):
+            return eps
+        else:
+            raise ValueError("cannot reach whole range with this failure rate")
 
     # def get_min_eps(self, failure_rate):
     #     ## returns the minimum epsilon that is compatible with
@@ -98,24 +109,25 @@ p = 0.5
 delta = 1e-9
 # eps = np.arange(0.1, 5.0, )
 n_vals = []
-eps_vals = []
+den_eps_vals = []
+big_eps_vals = []
 for n in range(3, 60):
     den_priv = DeniablePrivacy(n=n, p=p)
     eps = den_priv.get_min_eps_slow(delta)
+    max_eps = den_priv.get_eps_full_range(delta)
     n_vals.append(n)
-    eps_vals.append(eps)
+    den_eps_vals.append(eps)
+    big_eps_vals.append(max_eps)
 
 print(n_vals)
-print(eps_vals)
+print(den_eps_vals)
+print(big_eps_vals)
 
 n_vals = range(3,60)
 
 
-eps_vals_10_3 = eps_vals
-
-plt.plot(n_vals, eps_vals, marker="o", label="minimum epsilon for delta=10^-9")
-# plt.plot(n_vals, eps_vals_10_6, marker="o", label="minimum epsilon for delta=10^-6")
-# plt.plot(n_vals, eps_vals_10_3, marker="o", label="minimum epsilon for delta=10^-3")
+plt.plot(n_vals, den_eps_vals, marker="o", label="Denialbe: minimum epsilon for delta=10^-9")
+plt.plot(n_vals, big_eps_vals, marker="x", label="Denialbe: minimum epsilon the full range")
 plt.title("Minimum Achievable Epsilon for Various Delta Values")
 plt.xlabel("n")
 plt.ylabel("epsilon")
