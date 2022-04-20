@@ -261,7 +261,7 @@ def compute_min_epsilon(p, n):
     return max_eps
 
 ###
-n_vals = range(2,80)  # Observation: smallest n with reasonable delta is 30 or 31
+n_vals = range(29,32)  # Observation: smallest n with reasonable delta is 30 or 31
 p_vals = np.arange(0.1, 1.0, 0.1) 
 # According to NIST (https://www.nist.gov/blogs/cybersecurity-insights/differential-privacy-future-work-open-challenges)
 # Epsilon values between 0 and 5 are strong
@@ -274,9 +274,9 @@ eps_vals = np.arange(0.1, 5.1, 0.1)
 #         print("n, a, prob count appears: ",n, a, binom.pmf(k=a, n=n, p=0.1))
 
 ## Uncomment to see min epsilon that ensures 1 -> n-1 is eNP
-for n in range(3, 10):
-    print("checking n =", n)
-    print("Minimum Bounding Epsilon for all counts: ", compute_min_epsilon(p=0.1, n=n))
+# for n in range(3, 10):
+#     print("checking n =", n)
+#     print("Minimum Bounding Epsilon for all counts: ", compute_min_epsilon(p=0.1, n=n))
 
 ## Uncomment if you want to verify compute_epsilon_given_delta_full_range() works
 # compute_epsilon_given_delta_full_range(delta=1e-9, p=0.5, n=50)
@@ -331,15 +331,15 @@ for n in range(3, 10):
 #     print("n, eps_without_ones : ", n, eps_without_ones, "\n")
 
 ## Uncomment if you want to see the private ranges given n, p, eps
-# for n in n_vals:
-#     for p in p_vals:
-#         for eps in eps_vals:
-#             # Delta represents the probability that eNP does not hold
-#             # Delta = 1-E[I]
-#             # According to (https://www.ftc.gov/system/files/documents/public_comments/2017/11/00023-141742.pdf)
-#             # Delta should be 1/(1 billion) = 1e-9
-#             private_range, exp_val = noiseless_privacy_analysis(n, p, eps)
-#             delta = 1 - exp_val
-#             if delta <= 1e-9:
-#                 print("good a range: [", private_range[0], ",", private_range[1], ")")
-#                 print("(n,p,eps,delta) =",(n, p, eps, delta), "\n")
+for n in n_vals:
+    for p in p_vals:
+        for eps in eps_vals:
+            # Delta represents the probability that eNP does not hold
+            # Delta = 1-E[I]
+            # According to (https://www.ftc.gov/system/files/documents/public_comments/2017/11/00023-141742.pdf)
+            # Delta should be 1/(1 billion) = 1e-9
+            private_range, exp_val = noiseless_privacy_analysis(n, p, eps)
+            delta = 1 - exp_val
+            if delta <= 1e-9:
+                print("good a range: [", private_range[0], ",", private_range[1], "]")
+                print("(n,p,eps,delta) =",(n, p, eps, delta), "\n")
