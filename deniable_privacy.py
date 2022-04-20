@@ -101,7 +101,7 @@ class DeniablePrivacy:
     def get_min_eps_slow(self, failure_rate):
         ## returns the minimum epsilon that is compatible with
         ## a given failure rate
-        eps = 1/1e9 # This eps results in virtually no success
+        eps = 1e9 
         for a in self.valid_outputs():
             cand_eps = self.get_min_epsilon_for_count(a)
             if 1 - failure_rate < self.get_success_rate(cand_eps):
