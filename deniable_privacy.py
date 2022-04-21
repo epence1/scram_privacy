@@ -1,3 +1,4 @@
+from cv2 import NORM_MINMAX
 from scipy.stats import binom
 from math import exp, log
 from decimal import *
@@ -5,6 +6,9 @@ import numpy as np
 import scipy
 import matplotlib.pyplot as plt
 
+## Equivilent to "Possible Innocence" idea as described here: https://www.cs.utexas.edu/~shmat/courses/cs395t_fall04/crowds.pdf
+## "Probable Innocence" likely prevents attackers from acting on their suspicions according to paper
+## Does this mean "Possible Innocence" will draw action from attackers?
 
 class DeniablePrivacy:
     def __init__(self, n, p):
@@ -80,7 +84,7 @@ class DeniablePrivacy:
         min_eps = self.get_min_epsilon_for_count(a)
         if verbose:
             print("a, min_eps: ", a, min_eps)
-        ## Only is min_eps is less than because technically min_eps sits on the threshold 
+        ## Only if min_eps is less than eps because technically min_eps sits on the threshold 
         ## between private and nnot private under the specified eps
         return min_eps < eps
 
@@ -101,10 +105,14 @@ class DeniablePrivacy:
     def get_min_eps_slow(self, failure_rate):
         ## returns the minimum epsilon that is compatible with
         ## a given failure rate
+        ## does not necessarily support the full range of outputs 1->n-1
         eps = 1e9 
         for a in self.valid_outputs():
+            ## Compute epsilon value necessaryto bound this specific a
             cand_eps = self.get_min_epsilon_for_count(a)
+            ## If success rate required is less than success rate achieved cand_eps suffices
             if 1 - failure_rate < self.get_success_rate(cand_eps):
+                ## Take minimum so that we know smallest epsilon that provides any privacy guarantees????
                 eps = min(cand_eps, eps)
         return eps
 
@@ -112,31 +120,26 @@ class DeniablePrivacy:
         eps = 0
         for a in self.valid_outputs():
             cand_eps = self.get_min_epsilon_for_count(a)
+            ## Take max over all of the mins
             eps = max(cand_eps, eps)
-
+        ## If this max meets the failure rate constraint, then the whole range is supported
         if 1 - failure_rate < self.get_success_rate(eps):
             return eps
         else:
-            raise ValueError("cannot reach whole range with this failure rate")
+            print("cannot reach whole range with this failure rate")
+            #raise ValueError("cannot reach whole range with this failure rate")
+            return -1
 
-    # def get_min_eps(self, failure_rate):
-    #     ## returns the minimum epsilon that is compatible with
-    #     ## a given failure rate
-    #     eps = 1e9  ## dummy value. effectively infinity
-    #     for a in self.valid_outputs():
-    #         cand_eps = self.get_min_epsilon_for_count(a)
-    #         if 1 - failure_rate < self.get_success_rate(eps):
-    #             eps = min(cand_eps, eps)
-    #     return eps
-
-
+NMIN = 3
+NMAX = 1000
 p = 0.5
 delta = 1e-9
 # eps = np.arange(0.1, 5.0, )
 n_vals = []
 den_eps_vals = []
 big_eps_vals = []
-for n in range(3, 60):
+for n in range(NMIN, NMAX):
+    print('n')
     den_priv = DeniablePrivacy(n=n, p=p)
     eps = den_priv.get_min_eps_slow(delta)
     max_eps = den_priv.get_eps_full_range(delta)
@@ -148,13 +151,14 @@ print(n_vals)
 print(den_eps_vals)
 print(big_eps_vals)
 
-n_vals = range(3,60)
+n_vals = range(NMIN,NMAX)
 
 
-plt.plot(n_vals, den_eps_vals, marker="o", label="Denialbe: minimum epsilon for delta=10^-9")
-plt.plot(n_vals, big_eps_vals, marker="x", label="Denialbe: minimum epsilon the full range")
+plt.plot(n_vals, den_eps_vals, marker="o", label="Deniable: minimum epsilon for delta=10^-9")
+plt.plot(n_vals, big_eps_vals, marker="x", label="Deniable: minimum epsilon the full range")
 plt.title("Minimum Achievable Epsilon for Various Delta Values")
 plt.xlabel("n")
 plt.ylabel("epsilon")
+plt.ylim([-1, 20])
 plt.legend()
 plt.show()
