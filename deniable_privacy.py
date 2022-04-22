@@ -92,18 +92,17 @@ class DeniablePrivacy:
         '''
         expected_success_rate = 0
         priv_range = [-1,-1]
-        switched = False
         for a in range(1, self.n):
             is_private = self.is_eps_deniable_private(a, eps, verbose)
             if is_private and priv_range[0]==-1:
                 priv_range[0]=a
-                switched = True
-            elif not is_private and switched==True and priv_range[1]==-1:
+            if not is_private and priv_range[0]!=-1 and priv_range[1]==-1:
                 priv_range[1]=a-1
-            elif is_private and switched==True and priv_range[1]!=-1:
-                raise ValueError("going back and forth")
             
             expected_success_rate += self.prob_output_appearing(a) * is_private
+
+        if priv_range[1] == -1:
+            priv_range[1] = self.n-1
 
         return expected_success_rate, priv_range
 
@@ -123,7 +122,8 @@ class DeniablePrivacy:
                 ## If we are updating epsilon, also update range
                 if cand_eps < eps:
                     output_range=private_range
-                eps = min(cand_eps, eps)
+                    eps = cand_eps
+                # eps = min(cand_eps, eps)
         return eps, output_range
 
     def get_eps_full_range(self,):
@@ -135,36 +135,36 @@ class DeniablePrivacy:
         return eps
 
 #######################################################################
-# NMIN = 3
-# NMAX = 50
-# p = 0.5
-# delta = 1e-9
-# # eps = np.arange(0.1, 5.0, )
-# n_vals = []
-# den_eps_vals = []
-# big_eps_vals = []
-# for n in range(NMIN, NMAX):
-#     print(n)
-#     den_priv = DeniablePrivacy(n=n, p=p)
-#     eps, output_range = den_priv.get_min_eps_slow(delta)
-#     #max_eps = den_priv.get_eps_full_range()
-#     n_vals.append(n)
-#     den_eps_vals.append(eps)
-#     #big_eps_vals.append(max_eps)
-#     print(output_range)
+NMIN = 3
+NMAX = 50
+p = 0.5
+delta = 1e-9
+# eps = np.arange(0.1, 5.0, )
+n_vals = []
+den_eps_vals = []
+big_eps_vals = []
+for n in range(NMIN, NMAX):
+    print(n)
+    den_priv = DeniablePrivacy(n=n, p=p)
+    eps, output_range = den_priv.get_min_eps_slow(delta)
+    print(eps, output_range)
+    #max_eps = den_priv.get_eps_full_range()
+    n_vals.append(n)
+    den_eps_vals.append(eps)
+    #big_eps_vals.append(max_eps)
 
-# print(n_vals)
-# print(den_eps_vals)
-# #print(big_eps_vals)
+print(n_vals)
+print(den_eps_vals)
+#print(big_eps_vals)
 
-# n_vals = range(NMIN,NMAX)
+n_vals = range(NMIN,NMAX)
 
 
-# plt.plot(n_vals, den_eps_vals, marker="o", label="Deniable: minimum epsilon for delta=10^-9")
-# #plt.plot(n_vals, big_eps_vals, marker="x", label="Deniable: minimum epsilon the full range")
-# plt.title("Minimum Achievable Epsilon for Various Delta Values")
-# plt.xlabel("n")
-# plt.ylabel("epsilon")
+plt.plot(n_vals, den_eps_vals, marker="o", label="Deniable: minimum epsilon for delta=10^-9")
+#plt.plot(n_vals, big_eps_vals, marker="x", label="Deniable: minimum epsilon the full range")
+plt.title("Minimum Achievable Epsilon for Various Delta Values")
+plt.xlabel("n")
+plt.ylabel("epsilon")
 # plt.ylim([-1, 20])
-# plt.legend()
-# plt.show()
+plt.legend()
+plt.show()
