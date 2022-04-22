@@ -1,12 +1,10 @@
-from cv2 import NORM_MINMAX
 from scipy.stats import binom
 from math import exp, log
 from decimal import *
 import numpy as np
-import scipy
 import matplotlib.pyplot as plt
 
-## Equivilent to "Possible Innocence" idea as described here: https://www.cs.utexas.edu/~shmat/courses/cs395t_fall04/crowds.pdf
+## Equivalent to "Possible Innocence" idea as described here: https://www.cs.utexas.edu/~shmat/courses/cs395t_fall04/crowds.pdf
 ## "Probable Innocence" likely prevents attackers from acting on their suspicions according to paper
 ## Does this mean "Possible Innocence" will draw action from attackers?
 
@@ -84,9 +82,7 @@ class DeniablePrivacy:
         min_eps = self.get_min_epsilon_for_count(a)
         if verbose:
             print("a, min_eps: ", a, min_eps)
-        ## Only if min_eps is less than eps because technically min_eps sits on the threshold 
-        ## between private and nnot private under the specified eps
-        return min_eps < eps
+        return min_eps <= eps
 
     def get_success_rate(self, eps, verbose=False):
         '''
@@ -95,70 +91,80 @@ class DeniablePrivacy:
         probability of occurance
         '''
         expected_success_rate = 0
+        priv_range = [-1,-1]
+        switched = False
         for a in range(1, self.n):
-            expected_success_rate += self.prob_output_appearing(
-                a
-            ) * self.is_eps_deniable_private(a, eps, verbose)
+            is_private = self.is_eps_deniable_private(a, eps, verbose)
+            if is_private and priv_range[0]==-1:
+                priv_range[0]=a
+                switched = True
+            elif not is_private and switched==True and priv_range[1]==-1:
+                priv_range[1]=a-1
+            elif is_private and switched==True and priv_range[1]!=-1:
+                raise ValueError("going back and forth")
+            
+            expected_success_rate += self.prob_output_appearing(a) * is_private
 
-        return expected_success_rate
+        return expected_success_rate, priv_range
 
     def get_min_eps_slow(self, failure_rate):
+        ## By getting smallest epsilon that meets the delta, are we ensuring largest range of protected inputs?
         ## returns the minimum epsilon that is compatible with
         ## a given failure rate
         ## does not necessarily support the full range of outputs 1->n-1
         eps = 1e9 
+        output_range = [-1,-1]
         for a in self.valid_outputs():
-            ## Compute epsilon value necessaryto bound this specific a
+            ## Compute epsilon value necessary to bound this specific a
             cand_eps = self.get_min_epsilon_for_count(a)
-            ## If success rate required is less than success rate achieved cand_eps suffices
-            if 1 - failure_rate < self.get_success_rate(cand_eps):
-                ## Take minimum so that we know smallest epsilon that provides any privacy guarantees????
+            ## Across all counts, if success rate required is less than success rate achieved cand_eps suffices
+            success_rate, private_range = self.get_success_rate(cand_eps)
+            if 1 - failure_rate < success_rate:
+                ## If we are updating epsilon, also update range
+                if cand_eps < eps:
+                    output_range=private_range
                 eps = min(cand_eps, eps)
-        return eps
+        return eps, output_range
 
-    def get_eps_full_range(self, failure_rate):
+    def get_eps_full_range(self,):
         eps = 0
         for a in self.valid_outputs():
             cand_eps = self.get_min_epsilon_for_count(a)
-            ## Take max over all of the mins
+            ## Take max over all of the mins to determine what epsilon is required to protect even the most unlikely of outcomes
             eps = max(cand_eps, eps)
-        ## If this max meets the failure rate constraint, then the whole range is supported
-        if 1 - failure_rate < self.get_success_rate(eps):
-            return eps
-        else:
-            print("cannot reach whole range with this failure rate")
-            #raise ValueError("cannot reach whole range with this failure rate")
-            return -1
+        return eps
 
-NMIN = 3
-NMAX = 1000
-p = 0.5
-delta = 1e-9
-# eps = np.arange(0.1, 5.0, )
-n_vals = []
-den_eps_vals = []
-big_eps_vals = []
-for n in range(NMIN, NMAX):
-    print('n')
-    den_priv = DeniablePrivacy(n=n, p=p)
-    eps = den_priv.get_min_eps_slow(delta)
-    max_eps = den_priv.get_eps_full_range(delta)
-    n_vals.append(n)
-    den_eps_vals.append(eps)
-    big_eps_vals.append(max_eps)
+#######################################################################
+# NMIN = 3
+# NMAX = 50
+# p = 0.5
+# delta = 1e-9
+# # eps = np.arange(0.1, 5.0, )
+# n_vals = []
+# den_eps_vals = []
+# big_eps_vals = []
+# for n in range(NMIN, NMAX):
+#     print(n)
+#     den_priv = DeniablePrivacy(n=n, p=p)
+#     eps, output_range = den_priv.get_min_eps_slow(delta)
+#     #max_eps = den_priv.get_eps_full_range()
+#     n_vals.append(n)
+#     den_eps_vals.append(eps)
+#     #big_eps_vals.append(max_eps)
+#     print(output_range)
 
-print(n_vals)
-print(den_eps_vals)
-print(big_eps_vals)
+# print(n_vals)
+# print(den_eps_vals)
+# #print(big_eps_vals)
 
-n_vals = range(NMIN,NMAX)
+# n_vals = range(NMIN,NMAX)
 
 
-plt.plot(n_vals, den_eps_vals, marker="o", label="Deniable: minimum epsilon for delta=10^-9")
-plt.plot(n_vals, big_eps_vals, marker="x", label="Deniable: minimum epsilon the full range")
-plt.title("Minimum Achievable Epsilon for Various Delta Values")
-plt.xlabel("n")
-plt.ylabel("epsilon")
-plt.ylim([-1, 20])
-plt.legend()
-plt.show()
+# plt.plot(n_vals, den_eps_vals, marker="o", label="Deniable: minimum epsilon for delta=10^-9")
+# #plt.plot(n_vals, big_eps_vals, marker="x", label="Deniable: minimum epsilon the full range")
+# plt.title("Minimum Achievable Epsilon for Various Delta Values")
+# plt.xlabel("n")
+# plt.ylabel("epsilon")
+# plt.ylim([-1, 20])
+# plt.legend()
+# plt.show()
