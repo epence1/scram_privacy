@@ -143,20 +143,20 @@ den_eps_vals = []
 big_eps_vals = []
 unprotected_counts = []
 
-for n in n_vals:
-    print("testing n: ", n)
-    den_priv = DeniablePrivacy(n=n, p=p)
-    eps, output_range = den_priv.get_min_eps_slow(delta)
+# for n in n_vals:
+#     print("testing n: ", n)
+#     den_priv = DeniablePrivacy(n=n, p=p)
+#     eps, output_range = den_priv.get_min_eps_slow(delta)
 
-    unprotected_lower_cases = output_range[0]-1
-    unprotected_upper_cases = n-output_range[1]-1
-    unprotected_total = unprotected_lower_cases+unprotected_upper_cases
-    unprotected_counts.append(unprotected_total)
+#     unprotected_lower_cases = output_range[0]-1
+#     unprotected_upper_cases = n-output_range[1]-1
+#     unprotected_total = unprotected_lower_cases+unprotected_upper_cases
+#     unprotected_counts.append(unprotected_total)
 
-    print("(eps, output_range, num_unprotected):", eps, output_range, unprotected_total)
-    max_eps = den_priv.get_eps_full_range()
-    den_eps_vals.append(eps)
-    big_eps_vals.append(max_eps)
+#     print("(eps, output_range, num_unprotected):", eps, output_range, unprotected_total)
+#     max_eps = den_priv.get_eps_full_range()
+#     den_eps_vals.append(eps)
+#     big_eps_vals.append(max_eps)
 
 # print(n_vals)
 # print(den_eps_vals)

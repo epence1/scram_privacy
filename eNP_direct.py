@@ -145,7 +145,7 @@ class ENPPrivacy:
             # If the last count we checked was eNP private, make sure we set the upper bound on a to be n-1
             upper_a = self.n - 1
 
-        private_range = (lower_a, upper_a)
+        private_range = [lower_a, upper_a]
         return expected_success_rate, private_range
 
     def get_min_eps_slow(self, failure_rate):
