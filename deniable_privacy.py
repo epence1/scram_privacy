@@ -147,7 +147,6 @@ unprotected_counts = []
 #     print("testing n: ", n)
 #     den_priv = DeniablePrivacy(n=n, p=p)
 #     eps, output_range = den_priv.get_min_eps_slow(delta)
-
 #     unprotected_lower_cases = output_range[0]-1
 #     unprotected_upper_cases = n-output_range[1]-1
 #     unprotected_total = unprotected_lower_cases+unprotected_upper_cases
@@ -179,5 +178,28 @@ unprotected_counts = []
 # plt.ylabel("# unprotected outputs")
 # plt.legend()
 # plt.show()
+
+# ## Plot Probability Density for Deniable Privacy
+# N = 3
+# den_priv = DeniablePrivacy(n=N, p=p)
+# probability_density_x = []
+# probability_density_y = []
+
+# for a in range(1,N):
+#     probability_density_x.append(a)
+#     probability_density_y.append(den_priv.prob_output_appearing(a))
+
+# text = 'Probability of count=1 is '+str(probability_density_y[0])+'.\n Probability of count=(n-1) is '+str(probability_density_y[0])
+# plt.plot(probability_density_x, probability_density_y, marker="o", label="Probability Density")
+# plt.xticks(np.arange(min(probability_density_x), max(probability_density_x)+1, 1.0))
+
+# plt.text(probability_density_x[0]+0.2, probability_density_y[0]*1.02, text, ha='center')
+# plt.title("Deniable Privacy: Probability Density Function of Possible Outputs for N="+str(N))
+# plt.xlabel("count=a")
+# plt.ylabel("Probability of seeing output count=a")
+# plt.legend()
+# plt.show()
+
+
 
 

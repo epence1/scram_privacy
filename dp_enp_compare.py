@@ -23,7 +23,7 @@ for n in n_vals:
     dp_eps_vals.append(dp_eps)
 
     enp_unprotected = enp_range[0] + n-enp_range[1]
-    dp_unprotected = dp_range[0] + n-dp_range[1]
+    dp_unprotected = dp_range[0]-1 + n-dp_range[1]-1
     enp_unprotected_counts.append(enp_unprotected)
     dp_unprotected_counts.append(dp_unprotected)
 
