@@ -100,10 +100,9 @@ class DeniablePrivacy:
                 priv_range[1]=a-1
             
             expected_success_rate += self.prob_output_appearing(a) * is_private
-
+            
         if priv_range[1] == -1:
             priv_range[1] = self.n-1
-
         return expected_success_rate, priv_range
 
     def get_min_eps_slow(self, failure_rate):
@@ -136,35 +135,49 @@ class DeniablePrivacy:
 
 #######################################################################
 NMIN = 3
-NMAX = 50
+NMAX = 61
 p = 0.5
 delta = 1e-9
-# eps = np.arange(0.1, 5.0, )
-n_vals = []
+n_vals = range(NMIN,NMAX)
 den_eps_vals = []
 big_eps_vals = []
-for n in range(NMIN, NMAX):
-    print(n)
+unprotected_counts = []
+
+for n in n_vals:
+    print("testing n: ", n)
     den_priv = DeniablePrivacy(n=n, p=p)
     eps, output_range = den_priv.get_min_eps_slow(delta)
-    print(eps, output_range)
-    #max_eps = den_priv.get_eps_full_range()
-    n_vals.append(n)
+
+    unprotected_lower_cases = output_range[0]-1
+    unprotected_upper_cases = n-output_range[1]-1
+    unprotected_total = unprotected_lower_cases+unprotected_upper_cases
+    unprotected_counts.append(unprotected_total)
+
+    print("(eps, output_range, num_unprotected):", eps, output_range, unprotected_total)
+    max_eps = den_priv.get_eps_full_range()
     den_eps_vals.append(eps)
-    #big_eps_vals.append(max_eps)
+    big_eps_vals.append(max_eps)
 
-print(n_vals)
-print(den_eps_vals)
-#print(big_eps_vals)
+# print(n_vals)
+# print(den_eps_vals)
+# print(big_eps_vals)
 
-n_vals = range(NMIN,NMAX)
+# ## Plot Eps for Deltas
+# plt.plot(n_vals, den_eps_vals, marker="o", label="Deniable: minimum epsilon for delta=10^-9")
+# plt.plot(n_vals, big_eps_vals, marker="x", label="Deniable: minimum epsilon for delta=0")
+# plt.title("Minimum Achievable Epsilon for Various Delta Values")
+# plt.xlabel("n")
+# plt.ylabel("epsilon")
+# plt.legend()
+# plt.show()
+
+# ## Plot Number of Unprotected Outputs for each N
+# plt.plot(n_vals, unprotected_counts, marker="o", label="Deniable: Unprotected Counts for delta=10^-9")
+# plt.plot(n_vals, [0]*len(n_vals), marker="x", label="Deniable: Unprotected Counts for delta=0")
+# plt.title("Deniable Privacy: Number of Unprotected Outputs for Various N")
+# plt.xlabel("n")
+# plt.ylabel("# unprotected outputs")
+# plt.legend()
+# plt.show()
 
 
-plt.plot(n_vals, den_eps_vals, marker="o", label="Deniable: minimum epsilon for delta=10^-9")
-#plt.plot(n_vals, big_eps_vals, marker="x", label="Deniable: minimum epsilon the full range")
-plt.title("Minimum Achievable Epsilon for Various Delta Values")
-plt.xlabel("n")
-plt.ylabel("epsilon")
-# plt.ylim([-1, 20])
-plt.legend()
-plt.show()
