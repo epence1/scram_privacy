@@ -135,14 +135,16 @@ class DeniablePrivacy:
 
 #######################################################################
 NMIN = 3
-NMAX = 61
+NMAX = 10
 p = 0.5
 delta = 1e-9
 n_vals = range(NMIN,NMAX)
 den_eps_vals = []
 big_eps_vals = []
 unprotected_counts = []
+ends = []
 
+# ## Iterate and compute epsilons
 # for n in n_vals:
 #     print("testing n: ", n)
 #     den_priv = DeniablePrivacy(n=n, p=p)
@@ -151,6 +153,9 @@ unprotected_counts = []
 #     unprotected_upper_cases = n-output_range[1]-1
 #     unprotected_total = unprotected_lower_cases+unprotected_upper_cases
 #     unprotected_counts.append(unprotected_total)
+
+#     dp_sum_ends = den_priv.prob_output_appearing(1) + den_priv.prob_output_appearing(n-1)
+#     ends.append(dp_sum_ends)
 
 #     print("(eps, output_range, num_unprotected):", eps, output_range, unprotected_total)
 #     max_eps = den_priv.get_eps_full_range()
@@ -164,9 +169,19 @@ unprotected_counts = []
 # ## Plot Eps for Deltas
 # plt.plot(n_vals, den_eps_vals, marker="o", label="Deniable: minimum epsilon for delta=10^-9")
 # plt.plot(n_vals, big_eps_vals, marker="x", label="Deniable: minimum epsilon for delta=0")
-# plt.title("Minimum Achievable Epsilon for Various Delta Values")
+# plt.title("Min Epsilon for Various N")
 # plt.xlabel("n")
 # plt.ylabel("epsilon")
+# plt.legend()
+# plt.show()
+
+# ## Plot Probability mass of non private cases
+# plt.plot(n_vals, ends, marker="x", label="Deniable: Combined Probability Mass of c=1, c=n-1")
+# plt.axhline(y = 1e-9, color = 'r', linestyle = '-', label="Delta=1e-9")
+# plt.title("Combined Probability Mass of c=1, c=n-1 for Various N")
+# plt.xlabel("n")
+# plt.ylabel("log(probability)")
+# plt.yscale("log")
 # plt.legend()
 # plt.show()
 
@@ -180,8 +195,8 @@ unprotected_counts = []
 # plt.show()
 
 # ## Plot Probability Density for Deniable Privacy
-# N = 3
-# den_priv = DeniablePrivacy(n=N, p=p)
+# N = 20
+# den_priv = DeniablePrivacy(n=N, p=0.5)
 # probability_density_x = []
 # probability_density_y = []
 
@@ -193,13 +208,9 @@ unprotected_counts = []
 # plt.plot(probability_density_x, probability_density_y, marker="o", label="Probability Density")
 # plt.xticks(np.arange(min(probability_density_x), max(probability_density_x)+1, 1.0))
 
-# plt.text(probability_density_x[0]+0.2, probability_density_y[0]*1.02, text, ha='center')
+# # plt.text(probability_density_x[0]+0.2, probability_density_y[0]*1.02, text, ha='center')
 # plt.title("Deniable Privacy: Probability Density Function of Possible Outputs for N="+str(N))
 # plt.xlabel("count=a")
 # plt.ylabel("Probability of seeing output count=a")
 # plt.legend()
 # plt.show()
-
-
-
-

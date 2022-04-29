@@ -2,6 +2,7 @@ from scipy.stats import binom
 from math import exp, log
 from decimal import *
 import numpy as np
+import matplotlib.pyplot as plt
 
 class ENPPrivacy:
     def __init__(self, n, p):
@@ -258,3 +259,46 @@ eps_vals = np.arange(0.1, 5.1, 0.1)
 #             if delta <= 1e-9:
 #                 print("good a range: [", private_range[0], ",", private_range[1], "]")
 #                 print("(n,p,eps,delta) =",(n, p, eps, delta), "\n")
+
+# ## Plot Probability Density for eNP Privacy
+# N = 20
+# P=0.5
+# den_priv = ENPPrivacy(n=N, p=P)
+# probability_density_x = []
+# probability_density_y = []
+
+# for a in range(0,N+1):
+#     probability_density_x.append(a)
+#     probability_density_y.append(den_priv.prob_output_appearing(a))
+
+# text = 'Probability of count=0 is '+str(probability_density_y[0])+'.\n Probability of count='+str(N)+' is '+str(probability_density_y[0])
+# plt.plot(probability_density_x, probability_density_y, marker="o", label="Probability Density")
+# plt.xticks(np.arange(min(probability_density_x), max(probability_density_x)+1, 1.0))
+
+# plt.text(probability_density_x[0]+3, probability_density_y[0]+0.2, text, ha='center')
+# plt.title("eNP: Probability Density Function of Possible Outputs for N="+str(N))
+# plt.xlabel("Count=a")
+# plt.ylabel("Probability of seeing output count=a")
+# plt.legend()
+# plt.show()
+
+# ## Plot size if eposilon for static N, p
+# N = 20
+# P=0.5
+# enp_priv = ENPPrivacy(n=N, p=P)
+# count_vals = []
+# eps_vals = []
+
+# for a in range(0,N+1):
+#     min_eps_for_count = enp_priv.get_min_epsilon_for_count(a)
+#     count_vals.append(a)
+#     eps_vals.append(min_eps_for_count)
+
+# plt.title("eNP: Minimum Epsilon Required to Protect Each Possible Output, given N="+str(N)+" P="+str(P))
+# plt.plot(count_vals, eps_vals, marker="o", label="eNP: Minimum Epsilon")
+# plt.xlabel("Count=a")
+# plt.ylabel("Min epsilon to protect count=a")
+# plt.xticks(np.arange(min(count_vals), max(count_vals)+1, 1.0))
+# plt.ylim(-1,5)
+# plt.legend()
+# plt.show()
