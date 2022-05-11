@@ -54,7 +54,7 @@ class LaplaceNoise:
         return np.random.laplace(loc=self.mean, scale=self.b)
 
     def get_non_triv_prob(self):
-        return math.exp(-0.5 * self.eps)
+        return math.exp(-0.5 * self.eps) # fact 3.7 in dwok 2014
 
 
 ## Test Noise classes

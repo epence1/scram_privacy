@@ -51,7 +51,7 @@ class ENPPrivacy:
         
         # The below expression is derived as follows:
         # A/B < e^eps AND B/A < e^eps
-        # A/B < e^eps AND A/B > e^-eps
+        # A/B > e^-eps AND B/A > e^-eps
         # log(A/B) < eps AND log(A/B) > -eps
         # -eps < log(A/B) < eps
         # -eps < log(A) - log(B) < eps
