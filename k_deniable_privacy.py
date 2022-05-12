@@ -144,9 +144,9 @@ class KDeniablePrivacy:
         return eps
 
 #######################################################################
-K=2
+K=5
 NMIN = K*2+1 # TODO Is this necessary?
-NMAX = 50
+NMAX = 100
 p = 0.5
 delta = 1e-9
 n_vals = range(NMIN,NMAX)
