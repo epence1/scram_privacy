@@ -136,6 +136,9 @@ class KDeniablePrivacy:
         return eps, output_range
 
     def get_eps_full_range(self,):
+        '''
+        Computes the smallest epsilon required to protect every count in the output {k...n-k}
+        '''
         eps = 0
         for a in self.valid_outputs():
             cand_eps = self.get_min_epsilon_for_count(a)
@@ -154,55 +157,24 @@ k_den_eps_vals = []
 big_eps_vals = []
 
 ## Iterate and compute epsilons
-for n in n_vals:
-    print("testing n: ", n)
-    k_den_priv = KDeniablePrivacy(n=n, p=p, k=K)
-    eps, output_range = k_den_priv.get_min_eps_slow(delta)
-    k_den_eps_vals.append(eps)
+# for n in n_vals:
+#     print("testing n: ", n)
+#     k_den_priv = KDeniablePrivacy(n=n, p=p, k=K)
+#     eps, output_range = k_den_priv.get_min_eps_slow(delta)
+#     k_den_eps_vals.append(eps)
 
-    max_eps = k_den_priv.get_eps_full_range()
-    big_eps_vals.append(max_eps)
+#     max_eps = k_den_priv.get_eps_full_range()
+#     big_eps_vals.append(max_eps)
 
-print(n_vals)
-print(k_den_eps_vals)
+# print(n_vals)
+# print(k_den_eps_vals)
 
-## Plot Eps for Deltas
-plt.plot(n_vals, k_den_eps_vals, marker="o", label="K-Deniable: minimum epsilon for delta=10^-9")
-plt.plot(n_vals, big_eps_vals, marker="x", label="K-Deniable: minimum epsilon for delta=0")
-plt.title("Min Epsilon for Various N")
-plt.xlabel("n")
-plt.ylabel("epsilon")
-plt.ylim(-1,10)
-plt.legend()
-plt.show()
-
-# ## Plot Probability mass of non private cases
-# plt.plot(n_vals, ends, marker="x", label="Deniable: Combined Probability Mass of c=1, c=n-1")
-# plt.axhline(y = 1e-9, color = 'r', linestyle = '-', label="Delta=1e-9")
-# plt.title("Combined Probability Mass of c=1, c=n-1 for Various N")
+# ## Plot Eps for Deltas
+# plt.plot(n_vals, k_den_eps_vals, marker="o", label="K-Deniable: minimum epsilon for delta=10^-9")
+# plt.plot(n_vals, big_eps_vals, marker="x", label="K-Deniable: minimum epsilon for delta=0")
+# plt.title("Min Epsilon for Various N")
 # plt.xlabel("n")
-# plt.ylabel("log(probability)")
-# plt.yscale("log")
-# plt.legend()
-# plt.show()
-
-# ## Plot Probability Density for Deniable Privacy
-# N = 20
-# den_priv = DeniablePrivacy(n=N, p=0.5)
-# probability_density_x = []
-# probability_density_y = []
-
-# for a in range(1,N):
-#     probability_density_x.append(a)
-#     probability_density_y.append(den_priv.prob_output_appearing(a))
-
-# text = 'Probability of count=1 is '+str(probability_density_y[0])+'.\n Probability of count=(n-1) is '+str(probability_density_y[0])
-# plt.plot(probability_density_x, probability_density_y, marker="o", label="Probability Density")
-# plt.xticks(np.arange(min(probability_density_x), max(probability_density_x)+1, 1.0))
-
-# # plt.text(probability_density_x[0]+0.2, probability_density_y[0]*1.02, text, ha='center')
-# plt.title("Deniable Privacy: Probability Density Function of Possible Outputs for N="+str(N))
-# plt.xlabel("count=a")
-# plt.ylabel("Probability of seeing output count=a")
+# plt.ylabel("epsilon")
+# plt.ylim(-1,10)
 # plt.legend()
 # plt.show()
