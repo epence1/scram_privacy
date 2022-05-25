@@ -7,6 +7,9 @@ authors:
 - family-names: "de Castro"
   given-names: "Leo"
   orcid: ""
+- family-names: "Markov"
+  given-names: "Gina"
+  orcid: ""
 title: "scram_privacy"
 version: 1.0.0
 doi: 10.5281/zenodo.1234
