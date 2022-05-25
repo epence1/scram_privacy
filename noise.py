@@ -66,39 +66,39 @@ class LaplaceNoise:
 # print(l.get_expected_abs_val())
 
 
-NMIN = 3
-NMAX = 50
-p = 0.5
-delta = 1e-9
-n_vals = range(NMIN, NMAX)
-den_priv_noise_vals = []
-diff_priv_noise_vals = []
+# NMIN = 3
+# NMAX = 50
+# p = 0.5
+# delta = 1e-9
+# n_vals = range(NMIN, NMAX)
+# den_priv_noise_vals = []
+# diff_priv_noise_vals = []
 
-## Noise Comparison: Diff Privacy vs Deniable Privacy
-for n in n_vals:
-    print("testing n: ", n)
-    # Establish enp privacy so that we can compute exclusive probability of getting c=0, c=n
-    enp_priv = ENPPrivacy(n=n, p=p)
-    # Count Sensitivity is 1 so its just the mass of these cases
-    mass_0_n = enp_priv.prob_output_appearing(0) + enp_priv.prob_output_appearing(n)
-    den_priv_noise_vals.append(mass_0_n)
+# ## Noise Comparison: Diff Privacy vs Deniable Privacy
+# for n in n_vals:
+#     print("testing n: ", n)
+#     # Establish enp privacy so that we can compute exclusive probability of getting c=0, c=n
+#     enp_priv = ENPPrivacy(n=n, p=p)
+#     # Count Sensitivity is 1 so its just the mass of these cases
+#     mass_0_n = enp_priv.prob_output_appearing(0) + enp_priv.prob_output_appearing(n)
+#     den_priv_noise_vals.append(mass_0_n)
 
-    # Establish Den Privacy so that we can get bounding epsilon
-    den_priv = DeniablePrivacy(n=n, p=p)
-    den_eps, output_range = den_priv.get_min_eps_slow(delta)
+#     # Establish Den Privacy so that we can get bounding epsilon
+#     den_priv = DeniablePrivacy(n=n, p=p)
+#     den_eps, output_range = den_priv.get_min_eps_slow(delta)
 
-    # Use Den Privacy epsilon for Differential privacy noise function
-    l = LaplaceNoise(epsilon=den_eps)
-    print(den_eps, l.get_non_triv_prob())
-    diff_priv_noise = l.get_expected_abs_val()
-    diff_priv_noise_vals.append(diff_priv_noise)
+#     # Use Den Privacy epsilon for Differential privacy noise function
+#     l = LaplaceNoise(epsilon=den_eps)
+#     print(den_eps, l.get_non_triv_prob())
+#     diff_priv_noise = l.get_expected_abs_val()
+#     diff_priv_noise_vals.append(diff_priv_noise)
 
 
-plt.plot(n_vals, den_priv_noise_vals, marker="o", label="Deniable: Expected Noise")
-plt.plot(n_vals, diff_priv_noise_vals, marker="x", label="Differential: Expected Noise")
-plt.title("Expected Value of Noise: Differential vs Deniable")
-plt.xlabel("n")
-plt.ylabel("log(expected noise)")
-plt.yscale("log")
-plt.legend()
-plt.show()
+# plt.plot(n_vals, den_priv_noise_vals, marker="o", label="Deniable: Expected Noise")
+# plt.plot(n_vals, diff_priv_noise_vals, marker="x", label="Differential: Expected Noise")
+# plt.title("Expected Value of Noise: Differential vs Deniable")
+# plt.xlabel("n")
+# plt.ylabel("log(expected noise)")
+# plt.yscale("log")
+# plt.legend()
+# plt.show()
