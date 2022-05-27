@@ -42,11 +42,58 @@ p = MIN_P
 while p <= MAX_P:
     expected_correct = 0
     max_success_rate = 0
-    for c in range(0,N):
+    for c in range(0,N+1):
 
         # Calculate Pr[C=c | t = 1], Pr[C=c | t = 0]
         prob_c_given_0 = binom.pmf(k=c, n= N - 1, p=p) # fixes nth input as 0
         prob_c_given_1 = binom.pmf(k=c - 1, n= N - 1, p=p)  # fixes nth input as 1
+
+        #print("(prob_c_given_0, prob_c_given_1): ", prob_c_given_0, prob_c_given_1)
+
+        # b (MLE) = max of these two probabilities 
+        if prob_c_given_1 < prob_c_given_0:
+            b = 0
+        else:
+            b = 1
+
+        
+        success_rate = compute_prob_input_given_count(c, N)[b]
+        max_success_rate = max(success_rate, max_success_rate)
+        # if success_rate > max_success_rate and success_rate < 1-DELTA:
+            # max_success_rate = success_rate
+
+            #checking that this occurs at count 1
+            #if max_success_rate == .99:
+                #print("at max: ", c)
+
+        # print("Bit Guessed: ", b)
+        # Calculate Pr[t=b | C=c] -- probability that adversary is correct
+        expected_correct += binom.pmf(k=c, n=N, p=p) * success_rate
+        #print("Prob Guess is Correct: ", compute_prob_input_given_count(c, N)[b])
+
+    #after finish iterating through c take expectation of adversary's correctness
+    print("(p, Expected Correctness, advantage, max_success_rate): ", p, expected_correct, expected_correct - max(p, 1-p), max_success_rate)
+    p += P_STEP
+
+print("DENIABLE PRIVACY:")
+p = MIN_P
+while p <= MAX_P:
+    expected_correct = 0
+    max_success_rate = 0
+    for c in range(1,N):
+
+        # Calculate Pr[C=c | t = 1], Pr[C=c | t = 0]
+        if c > 1 and c < N-1:
+            prob_c_given_0 = binom.pmf(k=c, n= N - 1, p=p) # fixes nth input as 0
+            prob_c_given_1 = binom.pmf(k=c - 1, n= N - 1, p=p)  # fixes nth input as 1
+        elif c == 1:
+            prob_c_given_0 = binom.pmf(k=c, n= N - 1, p=p) + binom.pmf(k=0, n= N - 1, p=p) # fixes nth input as 0
+            prob_c_given_1 = binom.pmf(k=c - 1, n= N - 1, p=p)  # fixes nth input as 1
+        elif c == N-1:
+            prob_c_given_0 = binom.pmf(k=c, n= N - 1, p=p) # fixes nth input as 0
+            prob_c_given_1 = binom.pmf(k=c - 1, n= N - 1, p=p) + binom.pmf(k=c, n= N - 1, p=p)  # fixes nth input as 1
+        else:
+            raise ValueError("unknown c")
 
         #print("(prob_c_given_0, prob_c_given_1): ", prob_c_given_0, prob_c_given_1)
 
@@ -73,8 +120,6 @@ while p <= MAX_P:
     #after finish iterating through c take expectation of adversary's correctness
     print("(p, Expected Correctness, advantage, max_success_rate): ", p, expected_correct, expected_correct - max(p, 1-p), max_success_rate)
     p += P_STEP
-
-
 
 print("DIFFERENTIAL PRIVACY:")
 #differential privacy 
