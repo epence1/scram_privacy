@@ -5,16 +5,18 @@ from decimal import *
 from scipy.stats import laplace
 
 DELTA = 10e-9
-N = 100
+# N = 100
+N = 10
 # N = 30
 # P = 0.3
 # MIN_EPS = 0.1
 # MAX_EPS = 3
-EPS = 0.1
+# EPS = 0.1
 # EPS = 3
 
-MIN_P = 0.25
-MAX_P = 0.75
+MIN_P = 0.5
+# MAX_P = 0.75
+MAX_P = MIN_P
 P_STEP = 0.05
 
 def compute_prob_input_given_count(count, n):
@@ -123,7 +125,7 @@ while p <= MAX_P:
 
 print("DIFFERENTIAL PRIVACY:")
 #differential privacy 
-EPS_range = [0.1, 3]
+EPS_range = [0.1, 0.125, 0.15, 0.175, 0.2, 0.3, 0.5, 0.575, 0.6, 0.65, 0.75, 3]
 for EPS in EPS_range:
     p = MIN_P
     while p <= MAX_P:
